@@ -52,7 +52,7 @@ class YandexWeatherForecast:
 
     # Получение прогноза по координатам при помощи API
     def get_forecast(self, coordinates):
-        return yandex_weather_api.get(requests.Session(), self.weather_key, lat=coordinates[0], lon=coordinates[1])
+        return yandex_weather_api.get(requests.Session(), self.weather_key, lat=coordinates[1], lon=coordinates[0])
 
     def __call__(self, coordinates):
         forecast = self.get_forecast(coordinates)
@@ -67,21 +67,49 @@ class WeatherComForecast:
 
     # Создание ссылки по координатам
     @staticmethod
-    def create_url(coordinates, language: str):
-        return f'https://weather.com/{language}/weather/today/l/{coordinates[0]},{coordinates[1]}?unit=m'
+    def create_url(coordinates):
+        return f'https://weather.com/ru-RU/weather/today/l/{coordinates[1]},{coordinates[0]}?unit=m'
 
     # Получение температуры в данный момент по прогнозу
     @staticmethod
     def current_temperature(soup):
-        return soup.find('div', 'CurrentConditions--primary--39Y3f').find('span').contents[0][:-1]
+        return soup.find('span', 'CurrentConditions--tempValue--1RYJJ').contents[0][:-1]
 
-    def __call__(self, coordinates, language):
-        url = self.create_url(coordinates, language)
+    # Получение температуры утром по прогнозу
+    @staticmethod
+    def morning_temperature(soup):
+        return soup.find_all('div', 'Column--temp--2WEvA')[0].contents[0].contents[0][:-1]
+
+    # Получение температуры днем по прогнозу
+    @staticmethod
+    def daytime_temperature(soup):
+        return soup.find_all('div', 'Column--temp--2WEvA')[1].contents[0].contents[0][:-1]
+
+    # Получение температуры вечером по прогнозу
+    @staticmethod
+    def evening_temperature(soup):
+        return soup.find_all('div', 'Column--temp--2WEvA')[2].contents[0].contents[0][:-1]
+
+    # Получение температуры ночью по прогнозу
+    @staticmethod
+    def night_temperature(soup):
+        return soup.find_all('div', 'Column--temp--2WEvA')[3].contents[0].contents[0][:-1]
+
+    def __call__(self, coordinates):
+        url = self.create_url(coordinates)
         response = requests.get(url)
-        soup = BeautifulSoup(response.content)
+        soup = BeautifulSoup(response.content, 'html.parser')
         cur_t = self.current_temperature(soup)
+        mor_t = self.morning_temperature(soup)
+        day_t = self.daytime_temperature(soup)
+        evn_t = self.evening_temperature(soup)
+        nig_t = self.night_temperature(soup)
         return {
             'cur_t': cur_t,
+            'mor_t': mor_t,
+            'day_t': day_t,
+            'evn_t': evn_t,
+            'nig_t': nig_t,
         }
 
 
@@ -104,7 +132,7 @@ class AccuWeatherForecast:
         return url_base + url_attributes
 
     # Получение id искомого города
-    def get_city_key(self, language, city_name):
+    def get_city_key(self, language: str, city_name: str):
         url = self.create_city_key_url(language, city_name)
         response = requests.get(url)
         return response.json()[0]['Key']
