@@ -1,0 +1,11 @@
+<!-- Форма для получения языка, на котором будет выведен ответ на запрос, и искомого города -->
+<form action="/data" method = "POST">
+    <h2><label for="language">Язык/Language:</label></h2>
+    <input type = "radio" id="russian" name = "Language" value="Русский/Russian"/>
+    <label for="russian">Русский/Russian</label><br>
+    <input type = "radio" id="english" name = "Language" value="Английский/English"/>
+    <label for="english">Английский/English</label><br>
+    <h2><label for="city">Город/City:</label></h2>
+    <input type = "text" id="city" name = "City"/><br><br>
+    <input type="submit" value="Узнать метеорологические данные">
+</form>
