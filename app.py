@@ -29,13 +29,13 @@ def data():
         return f'The URL /data is accessed directly. Try going to "/form" to submit form'
     if request.method == 'POST':
         if request.form['Language'] == 'Русский/Russian':
-            language = 'ru-RU'
+            language = 'ru'
         elif request.form['Language'] == 'Английский/English':
             language = 'en-US'
         coordinates = yandex_geocoder_getter(request.form['City'])
         yandex_weather = yandex_weather_getter(coordinates)
-        accu_weather = accu_weather_getter(language[:2], request.form['City'])
-        weathercom_weather = weathercom_weather_getter(coordinates, language)
+        accu_weather = accu_weather_getter(language, request.form['City'])
+        weathercom_weather = weathercom_weather_getter(coordinates)
         if request.form['Language'] == 'Русский/Russian':
             form_data = {
                 'Город': request.form['City'],
@@ -43,6 +43,10 @@ def data():
                 'Температура в данный момент согласно Weather.com': weathercom_weather['cur_t'],
                 'Минимальная температура': accu_weather['min_t'],
                 'Максимальная температура': accu_weather['max_t'],
+                'Температура утром': weathercom_weather['mor_t'],
+                'Температура днем': weathercom_weather['day_t'],
+                'Температура вечером': weathercom_weather['evn_t'],
+                'Температура ночью': weathercom_weather['nig_t'],
             }
         elif request.form['Language'] == 'Английский/English':
             form_data = {
@@ -51,6 +55,10 @@ def data():
                 'Current temperature according to Weather.com': weathercom_weather['cur_t'],
                 'Highest temperature': accu_weather['min_t'],
                 'Lowest temperature': accu_weather['max_t'],
+                'Morning temperature': weathercom_weather['mor_t'],
+                'Daytime temperature': weathercom_weather['day_t'],
+                'Evening temperature': weathercom_weather['evn_t'],
+                'Night temperature': weathercom_weather['nig_t'],
             }
         return render_template('data.html', form_data=form_data)
 
